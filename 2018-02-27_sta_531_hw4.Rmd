@@ -47,6 +47,124 @@ We now observe that this is the estimator (3.10) from the Casella book, which we
 If the algorithm samples without replacement, we are going to get back the distribution $g$. To see this, take $M = n$, the maximum number of steps in the algorithm here, then, for some permutation $s$, we will have $(X_1, \dots, X_M) = (Y_{s(1)}, \dots, Y_{s(n)})$. The algorithm must stop here since we have used up all available values of $Y$. These X's are simply draws from $g$. 
 
 
+#### (2) Importance Sampling with the Normal and T
+
+##### (a) Estimating Normal from T
+
+```{r importanceSamplingNormal}
+nu = c(1,2,3,4)
+res = list()
+set.seed(2018)
+for (v in nu){
+  X = rt(n = 100000, df = v)
+  fX = dnorm(X)
+  gX = dt(df = v, x = X)
+  res[[v]] = data.frame(X, fX, gX)
+}
+glist = list()
+i = 1
+for (df in res){
+  EX = rep(NA, 5)
+  EX2 = rep(NA, 5)
+  for (k in 1:5){
+    ind = 1:10^k
+    EX[k] = mean(df$fX[ind]/df$gX[ind] * df$X[ind])
+    EX2[k] = mean(df$fX[ind]/df$gX[ind] * (df$X[ind])^2)
+  }
+  glist[[i]] = list("mu" = EX, "sigma2" = EX2)
+  i = i+1
+}
+k = 1:5
+df1 = data.frame(mu = glist[[1]]$mu, var = glist[[1]]$sigma2, n_samp = 10^k)
+df2 = data.frame(mu = glist[[2]]$mu, var = glist[[2]]$sigma2, n_samp = 10^k)
+df3 = data.frame(mu = glist[[3]]$mu, var = glist[[3]]$sigma2, n_samp = 10^k)
+df4 = data.frame(mu = glist[[4]]$mu, var = glist[[4]]$sigma2, n_samp = 10^k)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+g1 = ggplot(data = df1, aes(x = n_samp))+
+  geom_point(aes(x = n_samp, y = mu, pch = "mean")) +
+  theme_bw()+
+  ggtitle("df = 1") +
+  geom_point(aes(x = n_samp, y = var, pch = "variance"))
+g2 = ggplot(data = df2, aes(x = n_samp))+
+  geom_point(aes(x = n_samp, y = mu, pch = "mean")) +
+  theme_bw()+
+  ggtitle("df = 2") +
+  geom_point(aes(x = n_samp, y = var, pch = "variance"))
+g3 = ggplot(data = df3, aes(x = n_samp))+
+  geom_point(aes(x = n_samp, y = mu, pch = "mean")) +
+  theme_bw()+
+  ggtitle("df = 3") +
+  geom_point(aes(x = n_samp, y = var, pch = "variance"))
+g4 = ggplot(data = df4, aes(x = n_samp))+
+  geom_point(aes(x = n_samp, y = mu, pch = "mean")) +
+  theme_bw()+
+  ggtitle("df = 4") +
+  geom_point(aes(x = n_samp, y = var, pch = "variance"))
+gridExtra::grid.arrange(g1,g2,g3,g4,nrow = 2)
+```
+
+##### (b) Estimating T from Normal
+
+```{r impSamplingT}
+nu = c(1,2,3,4)
+res = list()
+set.seed(2018)
+for (v in nu){
+  X = rnorm(n = 100000)
+  fX = dt(X, df = v)
+  gX = dnorm(X)
+  res[[v]] = data.frame(X, fX, gX)
+}
+glist = list()
+i = 1
+for (df in res){
+  EX = rep(NA, 5)
+  EX2 = rep(NA, 5)
+  for (k in 1:5){
+    ind = 1:10^k
+    EX[k] = mean(df$fX[ind]/df$gX[ind] * df$X[ind])
+    EX2[k] = mean(df$fX[ind]/df$gX[ind] * (df$X[ind] - EX[k])^2)
+  }
+  glist[[i]] = list("mu" = EX, "sigma2" = EX2)
+  i = i+1
+}
+k = 1:5
+df1 = data.frame(mu = glist[[1]]$mu, var = glist[[1]]$sigma2, n_samp = 10^k)
+df2 = data.frame(mu = glist[[2]]$mu, var = glist[[2]]$sigma2, n_samp = 10^k)
+df3 = data.frame(mu = glist[[3]]$mu, var = glist[[3]]$sigma2, n_samp = 10^k)
+df4 = data.frame(mu = glist[[4]]$mu, var = glist[[4]]$sigma2, n_samp = 10^k)
+```
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+g1 = ggplot(data = df1, aes(x = n_samp))+
+  geom_point(aes(x = n_samp, y = mu, pch = "mean")) +
+  theme_bw()+
+  ggtitle("df = 1") +
+  geom_point(aes(x = n_samp, y = var, pch = "variance"))
+g2 = ggplot(data = df2, aes(x = n_samp))+
+  geom_point(aes(x = n_samp, y = mu, pch = "mean")) +
+  theme_bw()+
+  ggtitle("df = 2") +
+  geom_point(aes(x = n_samp, y = var, pch = "variance"))
+g3 = ggplot(data = df3, aes(x = n_samp))+
+  geom_point(aes(x = n_samp, y = mu, pch = "mean")) +
+  theme_bw()+
+  ggtitle("df = 3") +
+  geom_point(aes(x = n_samp, y = var, pch = "variance"))
+g4 = ggplot(data = df4, aes(x = n_samp))+
+  geom_point(aes(x = n_samp, y = mu, pch = "mean")) +
+  theme_bw()+
+  ggtitle("df = 4") +
+  geom_point(aes(x = n_samp, y = var, pch = "variance"))
+gridExtra::grid.arrange(g1,g2,g3,g4,nrow = 2)
+```
+
+We're not doing as well here, estimating the $t_\nu$ from the Normal. This problem is likely due to the ratio $f/g$ being unbounded in the tails. 
 
 #### (3) Weird Variance 
 
