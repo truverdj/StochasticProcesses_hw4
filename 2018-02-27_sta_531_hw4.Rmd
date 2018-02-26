@@ -46,6 +46,9 @@ We now observe that this is the estimator (3.10) from the Casella book, which we
 
 If the algorithm samples without replacement, we are going to get back the distribution $g$. To see this, take $M = n$, the maximum number of steps in the algorithm here, then, for some permutation $s$, we will have $(X_1, \dots, X_M) = (Y_{s(1)}, \dots, Y_{s(n)})$. The algorithm must stop here since we have used up all available values of $Y$. These X's are simply draws from $g$. 
 
+******
+
+\newpage
 
 #### (2) Importance Sampling with the Normal and T
 
